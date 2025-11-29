@@ -1,0 +1,173 @@
+@startuml
+' Настройки отображения
+skinparam theme plain
+skinparam linetype ortho
+skinparam shadowing false
+hide circle
+hide methods
+
+' Убираем иконки видимости
+skinparam classAttributeIconSize 0
+
+title ER-диаграмма: Crypto Arbitrage System
+
+package "Public Schema" {
+
+    ' ==============================================
+    ' СУЩНОСТИ (ТАБЛИЦЫ)
+    ' ==============================================
+
+    entity "users" as users {
+        *user_id : BIGSERIAL <<PK>>
+        __
+        email : VARCHAR(255) <<UQ>>
+        password_hash : TEXT
+        role : VARCHAR(20)
+        status : VARCHAR(20)
+        preferred_currency : VARCHAR(10)
+        timezone : VARCHAR(50)
+        ..
+        settings : JSONB
+        created_at : TIMESTAMPTZ
+        updated_at : TIMESTAMPTZ
+    }
+
+    entity "user_api_keys" as user_api_keys {
+        *key_id : UUID <<PK>>
+        __
+        *user_id : BIGINT <<FK>>
+        exchange_name : VARCHAR(50)
+        key_name : VARCHAR(100)
+        api_key_encrypted : TEXT
+        api_secret_encrypted : TEXT
+        permissions : JSONB
+        is_active : BOOLEAN
+        created_at : TIMESTAMPTZ
+    }
+
+    entity "exchanges" as exchanges {
+        *exchange_id : SERIAL <<PK>>
+        __
+        name : VARCHAR(50) <<UQ>>
+        base_url : TEXT
+        status : VARCHAR(20)
+    }
+
+    entity "trading_pairs" as trading_pairs {
+        *pair_id : SERIAL <<PK>>
+        __
+        *exchange_id : INT <<FK>>
+        symbol : VARCHAR(30)
+        base_asset : VARCHAR(10)
+        quote_asset : VARCHAR(10)
+        min_notional : NUMERIC
+        max_leverage : INT
+        is_active : BOOLEAN
+        created_at : TIMESTAMPTZ
+    }
+
+    entity "funding_rate_history" as funding_rate_history {
+        *pair_id : INT <<PK, FK>>
+        *recorded_at : TIMESTAMPTZ <<PK>>
+        __
+        funding_rate : NUMERIC
+        spot_price : NUMERIC
+        perp_price : NUMERIC
+        next_funding_time : TIMESTAMPTZ
+        ..
+        spread_percent : NUMERIC <<Generated>>
+        predicted_apy : NUMERIC <<Generated>>
+    }
+
+    entity "market_snapshot_latest" as market_snapshot_latest {
+        *pair_id : INT <<PK, FK>>
+        __
+        funding_rate : NUMERIC
+        spot_price : NUMERIC
+        perp_price : NUMERIC
+        spread_percent : NUMERIC
+        apy : NUMERIC
+        next_funding_time : TIMESTAMPTZ
+        updated_at : TIMESTAMPTZ
+    }
+
+    entity "positions" as positions {
+        *position_id : UUID <<PK>>
+        __
+        *user_id : BIGINT <<FK>>
+        *pair_id : INT <<FK>>
+        is_open : BOOLEAN
+        side : VARCHAR(10)
+        entry_spot_price : NUMERIC
+        entry_perp_price : NUMERIC
+        size_asset : NUMERIC
+        leverage : INT
+        ..
+        exit_spot_price : NUMERIC
+        exit_perp_price : NUMERIC
+        realized_pnl_usdt : NUMERIC
+        accumulated_funding_usdt : NUMERIC
+        opened_at : TIMESTAMPTZ
+        closed_at : TIMESTAMPTZ
+    }
+
+    entity "alerts" as alerts {
+        *alert_id : UUID <<PK>>
+        __
+        *user_id : BIGINT <<FK>>
+        pair_id : INT <<FK, Nullable>>
+        condition_type : VARCHAR(50)
+        threshold_value : NUMERIC
+        notification_channels : JSONB
+        is_active : BOOLEAN
+        last_triggered_at : TIMESTAMPTZ
+        cooldown_minutes : INT
+    }
+}
+
+package "Calculated Views" {
+    ' Представления для удобства понимания (не таблицы)
+    entity "view_dashboard_tickers" as view_dash {
+       (Derived from pairs & snapshot)
+    }
+
+    entity "view_user_active_portfolio" as view_port {
+       (Derived from positions & snapshot)
+    }
+}
+
+' ==============================================
+' СВЯЗИ (RELATIONSHIPS)
+' ==============================================
+
+' Users 1 -- 0..N ApiKeys
+users ||..o{ user_api_keys
+
+' Users 1 -- 0..N Positions
+users ||..o{ positions
+
+' Users 1 -- 0..N Alerts
+users ||..o{ alerts
+
+' Exchanges 1 -- 0..N Pairs
+exchanges ||..o{ trading_pairs
+
+' Pairs 1 -- 0..N History
+trading_pairs ||..o{ funding_rate_history
+
+' Pairs 1 -- 0..1 Snapshot (One-to-Zero-or-One)
+trading_pairs ||..o| market_snapshot_latest
+
+' Pairs 1 -- 0..N Positions
+trading_pairs ||..o{ positions
+
+' Pairs 0..1 -- 0..N Alerts (Alert can be global or specific to a pair)
+trading_pairs |o..o{ alerts
+
+' Зависимости View (пунктир)
+market_snapshot_latest ..> view_dash
+trading_pairs ..> view_dash
+positions ..> view_port
+market_snapshot_latest ..> view_port
+
+@enduml
