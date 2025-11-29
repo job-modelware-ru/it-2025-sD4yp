@@ -1,0 +1,44 @@
+Демо 2
+
+docker run -d -i -p 1234:1234 --name daemon ubuntu:14.04 nc -l 1234
+nc localhost 1234    // подключается к серверу контейнера netcat
+docker logs -t daemon | nl
+docker rm daemon 
+
+---
+
+docker run -d --restart=always --name demo2.2 ubuntu echo done
+docker ps
+docker logs -t demo2.2 | nl
+
+---
+
+docker run -d --restart=on-failure:10 --name demo2.3 ubuntu /bin/false
+docker ps -a
+
+---
+
+docker run -d --restart=on-failure:8 --name demo2.4 ubuntu sh -c 'echo "start attempt"; exit 1'
+docker ps -a
+docker logs -t demo2.4 | nl
+
+------------
+
+Демо 4
+
+# в первом терминале
+socat -v UNIX-LISTEN:/tmp/dockerapi.sock,fork \
+UNIX-CONNECT:/var/run/docker.sock &
+
+# во втором терминале
+docker -H unix:///tmp/dockerapi.sock ps -a
+
+------------
+
+Демо 10
+
+docker search node
+docker pull node
+docker run -t -i node /bin/bash
+node
+.help
