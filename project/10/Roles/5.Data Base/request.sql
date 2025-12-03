@@ -1,57 +1,94 @@
--- Запросы
+-- 1. Профиль игрока zxnkxn
+    u.login AS "Username",
+    u.email AS "Email",
+    (SELECT COUNT(*) FROM ratings WHERE user_id = u.id) AS "Rated games",
+    (SELECT COUNT(*) FROM reviews WHERE user_id = u.id) AS "Reviews written",
+    (SELECT array_length(genres, 1) FROM preferences WHERE user_id = u.id) AS "Favorite genres",
+    (SELECT array_length(favorite_games, 1) FROM preferences WHERE user_id = u.id) AS "Favorite games"
+FROM users u
+WHERE u.login = 'zxnkxn';
 
-
--- Регистрация нового пользователя
--- Проверка уникальности email/login, хэширование пароля
-INSERT INTO users (login, email, password_hash, role_id)
-VALUES ('eve', 'eve@example.com', 'hashed_pwd5', 1);
-
--- Авторизация
--- Проверка login/email и password_hash
-SELECT * FROM users
-WHERE login = 'alice' AND password_hash = 'hashed_pwd1' AND is_active = TRUE;
-
--- Получить рекомендации для игрока
-SELECT r.user_id, r.game_id, g.title, r.score
+-- 2. Рекомендации для игрока
+SELECT g.title
 FROM recommendations r
 JOIN games g ON r.game_id = g.id
-WHERE r.user_id = 1
-ORDER BY r.score DESC;
+WHERE r.user_id = (SELECT id FROM users WHERE login = 'zxnkxn')
+ORDER BY r.score DESC
+LIMIT 4;
 
--- Получить уведомления игрока
-SELECT * FROM notifications
-WHERE user_id = 1 AND is_read = FALSE;
+-- 3. Карточка игры: описание и жанр
+SELECT
+    g.title,
+    gm.description,
+    gm.genre
+FROM games g
+JOIN game_metadata gm ON g.id = gm.game_id
+WHERE g.title = 'Hogwarts Legacy';
 
--- Получить рейтинг и отзывы игры
-SELECT g.title, r.rating, rev.review_text
+-- 4. Отзывы к игре (одобренные)
+SELECT
+    u.login,
+    rv.review_text
+FROM reviews rv
+JOIN users u ON rv.user_id = u.id
+WHERE rv.game_id = (SELECT id FROM games WHERE title = 'Hogwarts Legacy')
+  AND rv.is_approved = TRUE;
+
+-- 5. Статистика для разработчика: оценки и отзывы
+SELECT
+    COUNT(r.id) AS total_ratings,
+    ROUND(AVG(r.rating), 1) AS avg_rating,
+    COUNT(rv.id) AS total_reviews
 FROM games g
 LEFT JOIN ratings r ON g.id = r.game_id
-LEFT JOIN reviews rev ON g.id = rev.game_id
-WHERE g.id = 1;
+LEFT JOIN reviews rv ON g.id = rv.game_id AND rv.is_approved = TRUE
+WHERE g.title = 'Hogwarts Legacy';
 
--- Добавление нового отзыва игроком
-INSERT INTO reviews (user_id, game_id, review_text)
-VALUES (1, 2, 'Loved this game!');
-
--- Добавление взаимодействия
-INSERT INTO interactions (user_id, game_id, event_type, value)
-VALUES (1, 2, 'play_time', '45');
-
--- Обновление прочитанного уведомления
-UPDATE notifications
-SET is_read = TRUE
-WHERE id = 1;
-
--- Получение списка игр разработчика
-SELECT g.id, g.title, g.status
+-- 6. Игры на модерации (непромодерированный контент)
+SELECT
+    g.title,
+    u.login AS developer
 FROM games g
-WHERE g.developer_id = 3;
+JOIN users u ON g.developer_id = u.id
+WHERE g.status = 'pending';
 
--- Статистика по игре
-SELECT g.title, COUNT(r.id) AS rating_count, AVG(r.rating) AS avg_rating,
-       COUNT(rev.id) AS review_count
-FROM games g
-LEFT JOIN ratings r ON g.id = r.game_id
-LEFT JOIN reviews rev ON g.id = rev.game_id
-WHERE g.id = 1
-GROUP BY g.title;
+-- 7. Агрегированные отчёты по предпочтениям игроков
+SELECT
+    report_type,
+    data
+FROM reports
+WHERE report_type = 'player_behavior';
+
+-- 8. Состояние системы (нагрузка, время отклика)
+SELECT
+    metric_name,
+    value
+FROM system_metrics
+ORDER BY metric_name;
+
+-- 9. Уведомления для игрока
+SELECT message
+FROM notifications
+WHERE user_id = (SELECT id FROM users WHERE login = 'zxnkxn')
+  AND is_read = FALSE;
+
+-- 10. Обновление предпочтений (пример: добавить жанр)
+UPDATE preferences
+SET genres = array_append(genres, 'Fighting')
+WHERE user_id = (SELECT id FROM users WHERE login = 'zxnkxn');
+
+-- 11. Блокировка пользователя (менеджером)
+UPDATE users
+SET is_active = FALSE
+WHERE login = 'zxnkxn';
+
+-- 12. Взаимодействия игрока с играми (просмотры, клики)
+SELECT
+    g.title,
+    i.event_type,
+    i.value
+FROM interactions i
+JOIN games g ON i.game_id = g.id
+WHERE i.user_id = (SELECT id FROM users WHERE login = 'zxnkxn')
+ORDER BY i.created_at DESC
+LIMIT 5;
