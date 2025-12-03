@@ -1,4 +1,5 @@
--- 1. Профиль игрока zxnkxn
+-- 1. Профиль игрока zxnkxn (точно как в макете)
+SELECT
     u.login AS "Username",
     u.email AS "Email",
     (SELECT COUNT(*) FROM ratings WHERE user_id = u.id) AS "Rated games",
