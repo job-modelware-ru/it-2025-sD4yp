@@ -1,0 +1,31 @@
+--Вставить данные
+INSERT INTO "category" ("parent_id", "name", "category_id") VALUES
+(NULL,	'Места',	1),
+(NULL,	'Меоприятия',	2),
+(1,	'Кафе & Рестораны',3),
+(1,	'Клубы & Бары',	4);
+
+--Выборка данных таблицы сущности
+SELECT entity_id, name, address, metro
+FROM entity
+GROUP BY entity_id
+ORDER BY created_at DESC
+
+--Получение сущностей по категории (например, "Музеи")
+SELECT e.* FROM entity e
+INNER JOIN entitycategory ec ON e.entity_id = ec.entity_id
+INNER JOIN category c ON ec.category_id = c.category_id
+WHERE c.name = 'Музеи';
+
+--Получение статистики по пользователю (созданные сущности, лайки, комментарии)
+SELECT 
+    COUNT(DISTINCT ue.entity_id) as entities_created,
+    COUNT(DISTINCT l.entity_id) as likes_given,
+    COUNT(DISTINCT c.comment_id) as comments_written
+FROM "user" u
+LEFT JOIN userentity ue ON u.user_id = ue.user_id
+LEFT JOIN "like" l ON u.user_id = l.user_id
+LEFT JOIN comment c ON u.user_id = c.user_id
+WHERE u.user_id = 1;
+
+
