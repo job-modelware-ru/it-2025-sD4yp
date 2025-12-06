@@ -1,0 +1,183 @@
+@startuml
+left to right direction
+
+skinparam classAttributeIconSize 0
+
+
+
+' === ENUMS ===
+
+enum UserRole {
+
+  GUEST
+
+  MAINTAINER
+
+  VIEWER
+
+}
+
+
+
+enum StreamingService {
+
+  SPOTIFY
+
+  YOUTUBE
+
+  YANDEX_MUSIC
+
+}
+
+
+class UserCredential {
+
+  + token: String
+
+  + expiry: DateTime
+
+}
+
+
+
+' === ДОМЕННАЯ ОБЛАСТЬ ===
+
+class User {
+
+  + id: UUID
+
+  + name: String
+
+  + role: UserRole
+
+}
+
+
+
+class Connection {
+
+  + joinedAt: DateTime
+
+}
+
+
+
+class Group {
+
+  + id: UUID
+
+  + code: String
+
+  + isActive: Boolean
+
+}
+
+
+
+class Playlist {
+
+  + id: UUID
+
+  + currentTrackIndex: Integer
+
+}
+
+
+
+class Track {
+
+  + title: String
+
+  + duration: Integer
+
+  + externalUrl: String
+
+  + addedAt: DateTime
+
+}
+
+
+
+' === СТРИМИНГ СЕРВИСЫ ===
+
+class StreamingManager {
+
+  + validateTrack(url): Track
+
+  + exportPlaylist(playlist, service)
+
+}
+
+
+
+abstract class StreamingProvider {
+
+  + search(query): List<Track>
+
+  + getMetadata(url)
+
+}
+
+
+
+class YouTubeProvider {}
+
+class SpotifyProvider {}
+
+class YandexMusicProvider {}
+
+
+
+' ==========================================
+
+' СВЯЗИ (ЧИТАЕМ КАК ПРЕДЛОЖЕНИЯ)
+
+' ==========================================
+
+
+
+' 1. Регистрация и Аккаунт
+
+User "1" *-- "*" UserCredential : имеет >
+
+UserCredential *-- StreamingService : относится к >
+
+Track *-- StreamingService : полученно из <
+
+' 2. Участие в группе
+
+User "1" --> "*" Connection : создает >
+
+Group "1" *-- "*" Connection
+
+Connection *-- UserRole : содержит >
+
+
+
+' 3. Работа с Плейлистом (Исправлено)
+
+Group "1" *-- "1" Playlist : содержит >
+
+Playlist "1" *-- "*" Track
+
+User "1" --> "*" Track : добавляет >
+
+
+
+
+' 4. Взаимодействие с внешним миром
+
+Group ..> StreamingManager : запрашивает проверку 
+
+
+
+' 5. Внутреннее устройство стриминга
+
+StreamingManager o-- StreamingProvider : delegates to >
+
+StreamingProvider <|-- YouTubeProvider
+
+StreamingProvider <|-- SpotifyProvider
+
+StreamingProvider <|-- YandexMusicProvider
+@enduml

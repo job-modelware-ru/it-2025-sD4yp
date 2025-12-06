@@ -1,0 +1,5 @@
+https://developers.google.com/youtube/v3/docs?hl=ru
+
+https://yandex-music.readthedocs.io/en/latest/yandex_music.client.html
+
+https://developer.spotify.com/documentation/web-api
