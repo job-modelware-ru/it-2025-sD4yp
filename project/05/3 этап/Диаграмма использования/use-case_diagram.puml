@@ -1,0 +1,90 @@
+@startuml
+left to right direction
+
+' 1. Основные акторы (Слева)
+actor "Хост" as Host
+actor "Гость" as Guest
+actor "Зритель" as Viewer
+
+rectangle "Система 'Плейлист-Пас'" {
+  ' === ЯДРО СИСТЕМЫ ===
+  (Регистрация в системе) as Registration
+  
+  ' === АБСТРАКТНЫЕ ПРЕЦЕДЕНТЫ (Родители) ===
+  (Управление группой) as BaseGroup <<abstract>>
+  (Управление плейлистом) as BasePlaylist <<abstract>>
+  (Интеграция с сервисами) as BaseIntegration <<abstract>>
+  
+  ' === КОНКРЕТНЫЕ ПРЕЦЕДЕНТЫ (Дети) ===
+  (Создать группу) as UC1
+  (Удалить группу) as UC2
+  (Сгенерировать QR) as UC3
+  
+  (Добавить песню) as UC4
+  (Удалить песню) as UC5
+  (Изменить порядок) as UC6
+  (Запустить воспроизведение) as UC7
+  (Просмотр плейлиста) as UC8
+
+  (Добавить участника) as UC13
+  (Исключить участника) as UC14
+  (Подключиться к группе) as UC10
+  (Подключить платформу) as UC9
+  (Экспортировать плейлист) as UC11
+  
+  (Валидация трека) as UC12 <<system>>
+}
+
+' 2. Вторичный актор (Справа)
+' Мы объявляем его ПОСЛЕ системы, чтобы он улетел вправо
+actor "Стриминговый сервис" as StreamService
+actor "Сервис регистрации" as RegistryServic
+' === СВЯЗИ АКТЕРОВ С БАЗОЙ ===
+Host --> BaseGroup
+Host --> BasePlaylist
+Host --> BaseIntegration
+Host --> Registration
+
+Guest --> BasePlaylist : <<ограничение>>\nтолько add, delete, view
+Guest --> BaseIntegration : <<ограничение>>\nтолько export
+Guest --> Registration
+Viewer --> BaseGroup : <<ограничение>>\nтолько join
+
+Viewer --> BaseGroup : <<ограничение>>\nтолько join
+Viewer --> Registration
+
+' === НАСЛЕДОВАНИЕ (Generalization) ===
+' Убрал лишние слова extend, так как стрелка и так это значит
+BaseGroup <|-- UC1
+BaseGroup <|-- UC2
+BaseGroup <|-- UC13
+BaseGroup <|-- UC14
+BaseGroup <|-- UC10
+
+BasePlaylist <|-- UC4
+BasePlaylist <|-- UC5
+BasePlaylist <|-- UC6
+BasePlaylist <|-- UC7
+BasePlaylist <|-- UC8
+
+BaseIntegration <|-- UC9
+BaseIntegration <|-- UC11
+
+' === ЗАВИСИМОСТИ (Include) ===
+UC1 ..> UC3 : <<include>>
+UC13 ..> UC3 : <<include>>
+UC4 ..> UC12 : <<include>>
+UC11 ..> UC12 : <<include>>
+UC10 ..> UC3 : <<include>>
+' === ВЗАИМОДЕЙСТВИЕ С ВНЕШНИМ СЕРВИСОМ ===
+UC12 --> StreamService : Запрос валидации
+UC9 --> StreamService : OAuth-запрос
+
+Registration <-- RegistryServic
+
+' === ПРИМЕЧАНИЯ ===
+note bottom of Registration
+  Все действия требуют
+  наличия аккаунта
+end note
+@enduml
