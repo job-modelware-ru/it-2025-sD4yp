@@ -1,0 +1,115 @@
+# Открываем git bash
+
+# Создаем чистую папку для эксперимента
+mkdir git-internals-demo && cd git-internals-demo
+
+# Инициализируем новый репозиторий Git
+# Эта команда создает базовую структуру .git директории
+git init
+
+# Показываем, что создалось в .git
+# Это высокоуровневая команда для просмотра файлов
+ls -la .git/
+
+# Показываем структуру папки objects
+# find - утилита для поиска файлов, не специфичная для Git
+find .git/objects -type f
+
+# Смотрим содержимое HEAD - указателя на текущую позицию
+# cat - стандартная Unix команда для просмотра файлов
+cat .git/HEAD
+
+# Создаем тестовые файлы
+echo "Hello, Git Internals!" > file.txt
+echo "# Demo Project" > README.md
+
+# Добавляем файлы в индекс (staging area)
+# git add - высокоуровневая команда, которая создает blob-объекты
+git add file.txt README.md
+
+# Теперь смотрим, что появилось в objects
+find .git/objects -type f | sort
+
+# Берем хеш первого созданного объекта 
+find .git/objects -type f
+#копируем папку и имя файла - это хеш
+
+# Это низкоуровневая команда для определения типа объекта
+#e965047 будет другим
+git cat-file -t e965047 
+
+# Показываем содержимое blob-объекта
+# git cat-file -p - низкоуровневая команда для просмотра содержимого объектов
+#e965047 будет другим
+git cat-file -p e965047
+
+# Проверим все созданные объекты
+for obj in $(find .git/objects -type f | sed 's/.git\/objects\///' | sed 's/\///'); do
+  echo "=== Object: $obj ==="
+  echo "Type: $(git cat-file -t $obj)"
+  echo "Content:"
+  git cat-file -p $obj
+  echo
+done
+
+# Создаем коммит - высокоуровневая команда
+git commit -m "Initial commit with two files"
+
+# Смотрим, какие объекты добавились
+find .git/objects -type f | sort
+
+# Получаем хеш последнего коммита
+# git log - высокоуровневая, но с опцией --format можно получить сырые данные
+git log --oneline -1 --format="%H"
+
+# Сохраняем хеш коммита в переменную
+COMMIT_HASH=$(git log --oneline -1 --format="%H")
+echo "Commit hash: $COMMIT_HASH"
+
+# Исследуем commit-объект (НИЗКОУРОВНЕВАЯ КОМАНДА)
+git cat-file -p $COMMIT_HASH
+
+# Извлекаем хеш tree-объекта из коммита
+TREE_HASH=$(git cat-file -p $COMMIT_HASH | grep tree | cut -d' ' -f2)
+echo "Tree hash: $TREE_HASH"
+
+# Исследуем tree-объект (НИЗКОУРОВНЕВАЯ КОМАНДА)
+git cat-file -p $TREE_HASH
+
+# Альтернативный способ посмотреть tree
+git ls-tree $TREE_HASH
+
+# Показываем, куда сейчас указывает HEAD
+cat .git/HEAD
+
+# Смотрим содержимое ветки master
+cat .git/refs/heads/master
+
+# Показываем полную структуру .git
+find .git -type f -name "*" | head -15
+
+# Изменяем файл
+echo "Additional line" >> file.txt
+
+# Показываем изменения
+git diff
+
+# Добавляем в индекс (создается новый blob)
+git add file.txt
+
+# Смотрим новые объекты
+find .git/objects -type f | sort
+
+# Создаем второй коммит
+git commit -m "Update file.txt"
+
+# Показываем историю
+git log --oneline --graph --all
+
+# Проверим целостность всех объектов
+git fsck --verbose
+
+# Посчитаем объекты по типам
+for obj in $(find .git/objects -type f | sed 's/.git\/objects\///' | sed 's/\///'); do
+  git cat-file -t $obj
+done | sort | uniq -c
