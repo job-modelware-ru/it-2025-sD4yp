@@ -1,0 +1,183 @@
+@startuml
+skinparam monochrome true
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+class "User" as User {
+  + id: UUID
+  + email: string
+  + passwordHash: string
+  + name: string
+  + createdAt: datetime
+  + lastLogin: datetime
+  + isActive: boolean
+  + timezone: string
+  + preferredCurrency: enum {USDT, USD}
+  + minProfitabilityThreshold: float
+}
+
+class "Profile" as Profile {
+  + profileId: UUID
+  + preferredPairs: List<string>
+  + minFundingRate: float
+  + notificationSettings: json
+  + dashboardLayout: json
+}
+
+class "API Key" as ApiKey {
+  + keyId: UUID
+  + apiKey: string {encrypted}
+  + permissions: enum {READ_ONLY}
+  + status: enum {ACTIVE, INACTIVE, BLOCKED}
+  + createdAt: datetime
+  + lastUsed: datetime
+  + requestCount: integer
+  + rateLimit: integer
+}
+
+class "Exchange" as Exchange {
+  + exchangeId: integer
+  + name: string
+  + apiUrl: string
+  + status: enum {ONLINE, OFFLINE, MAINTENANCE}
+  + lastChecked: datetime
+  + connectionHealth: float
+}
+
+class "Trading Pair" as TradingPair {
+  + pairId: string
+  + symbol: string {e.g., "BTC/USDT"}
+  + baseCurrency: string
+  + quoteCurrency: string
+  + isActive: boolean
+  + minTradeAmount: float
+  + maxLeverage: integer
+}
+
+class "Current Funding Rate" as CurrentRate {
+  + rateId: UUID
+  + fundingRate: float
+  + nextFundingTime: datetime
+  + spotPrice: float
+  + perpetualPrice: float
+  + spread: float
+  + apy: float
+  + volume24h: float
+  + timestamp: datetime
+  + updatedAt: datetime
+}
+
+class "Historical Data" as HistoricalData {
+  + historyId: UUID
+  + fundingRate: float
+  + spotPrice: float
+  + perpetualPrice: float
+  + spread: float
+  + volume: float
+  + periodStart: datetime
+  + periodEnd: datetime
+  + timestamp: datetime
+}
+
+class "Alert" as Alert {
+  + alertId: UUID
+  + name: string
+  + conditionType: enum {MIN_RATE, MIN_APY, RATE_CHANGE}
+  + thresholdValue: float
+  + notificationMethod: enum {EMAIL, PUSH, BOTH}
+  + isActive: boolean
+  + lastTriggered: datetime
+  + createdAt: datetime
+}
+
+class "Arbitrage Position" as Position {
+  + positionId: UUID
+  + spotSize: float
+  + perpetualSize: float
+  + spotEntryPrice: float
+  + perpetualEntryPrice: float
+  + openingDate: datetime
+  + closingDate: datetime
+  + leverage: integer
+  + status: enum {OPEN, CLOSED, LIQUIDATED}
+  + accumulatedFunding: float
+  + unrealizedPnl: float
+  + healthRatio: float
+}
+
+class "Portfolio" as Portfolio {
+  + portfolioId: UUID
+  + totalProfit: float
+  + totalPositions: integer
+  + avgProfitability: float
+  + riskLevel: enum {LOW, MEDIUM, HIGH}
+  + lastUpdated: datetime
+}
+
+class "Data Export" as Export {
+  + exportId: UUID
+  + exportType: enum {CURRENT_RATES, HISTORICAL, PORTFOLIO}
+  + format: enum {CSV, JSON, EXCEL}
+  + periodStart: datetime
+  + periodEnd: datetime
+  + fileUrl: string
+  + createdAt: datetime
+  + fileSize: integer
+}
+
+User "1" *-- "1" Profile : has >
+User "1" *-- "0..*" ApiKey : owns >
+User "1" *-- "1" Portfolio : manages >
+User "1" *-- "0..*" Alert : configures >
+User "1" *-- "0..*" Position : opens >
+User "1" *-- "0..*" Export : creates >
+
+ApiKey "1" -- "1" Exchange : connects\nto >
+
+Exchange "1" *-- "0..*" TradingPair : provides >
+
+TradingPair "1" *-- "1" CurrentRate : has >
+TradingPair "1" *-- "0..*" HistoricalData : has\ntime series >
+
+Alert "1" -- "0..1" TradingPair : for pair >
+Alert "1" -- "1" User : belongs to >
+
+Position "1" -- "1" TradingPair : on pair >
+Position "1" -- "1" User : belongs to >
+Position "1" -- "1" Portfolio : included in >
+
+note top of User
+  <b>Role:</b> Trader
+  <b>Access:</b> Email registration
+  <b>Security:</b> Email confirmation required
+end note
+
+note right of ApiKey
+  <b>Requirement:</b> Read-only permissions only
+  <b>Security:</b> Encrypted key storage
+  <b>Limitations:</b> API rate limits applied
+end note
+
+note left of CurrentRate
+  <b>Update frequency:</b> Every 30 seconds
+  <b>Calculations:</b>
+  • Spread = perpetualPrice - spotPrice
+  • APY = (fundingRate * 3 * 365) * 100%
+end note
+
+note bottom of Alert
+  <b>Check interval:</b> Every 5 minutes
+  <b>Trigger conditions:</b>
+  • fundingRate > threshold
+  • apy > minProfitability
+  • Rapid rate change
+end note
+
+note right of Position
+  <b>Metrics:</b>
+  • accumulatedFunding = sum of funding payments
+  • unrealizedPnl = current profit/loss
+  • healthRatio = distance to liquidation
+end note
+
+@enduml

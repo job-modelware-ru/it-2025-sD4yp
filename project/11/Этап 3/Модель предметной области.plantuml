@@ -1,0 +1,183 @@
+@startuml
+skinparam monochrome true
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+class "Пользователь" as User {
+  + id: UUID
+  + email: string
+  + passwordHash: string
+  + name: string
+  + createdAt: datetime
+  + lastLogin: datetime
+  + isActive: boolean
+  + timezone: string
+  + preferredCurrency: enum {USDT, USD}
+  + minProfitabilityThreshold: float
+}
+
+class "Профиль" as Profile {
+  + profileId: UUID
+  + preferredPairs: List<string>
+  + minFundingRate: float
+  + notificationSettings: json
+  + dashboardLayout: json
+}
+
+class "API Ключ" as ApiKey {
+  + keyId: UUID
+  + apiKey: string {encrypted}
+  + permissions: enum {READ_ONLY}
+  + status: enum {ACTIVE, INACTIVE, BLOCKED}
+  + createdAt: datetime
+  + lastUsed: datetime
+  + requestCount: integer
+  + rateLimit: integer
+}
+
+class "Биржа" as Exchange {
+  + exchangeId: integer
+  + name: string
+  + apiUrl: string
+  + status: enum {ONLINE, OFFLINE, MAINTENANCE}
+  + lastChecked: datetime
+  + connectionHealth: float
+}
+
+class "Торговая пара" as TradingPair {
+  + pairId: string
+  + symbol: string {e.g., "BTC/USDT"}
+  + baseCurrency: string
+  + quoteCurrency: string
+  + isActive: boolean
+  + minTradeAmount: float
+  + maxLeverage: integer
+}
+
+class "Текущая ставка финансирования" as CurrentRate {
+  + rateId: UUID
+  + fundingRate: float
+  + nextFundingTime: datetime
+  + spotPrice: float
+  + perpetualPrice: float
+  + spread: float
+  + apy: float
+  + volume24h: float
+  + timestamp: datetime
+  + updatedAt: datetime
+}
+
+class "Исторические данные" as HistoricalData {
+  + historyId: UUID
+  + fundingRate: float
+  + spotPrice: float
+  + perpetualPrice: float
+  + spread: float
+  + volume: float
+  + periodStart: datetime
+  + periodEnd: datetime
+  + timestamp: datetime
+}
+
+class "Алерт" as Alert {
+  + alertId: UUID
+  + name: string
+  + conditionType: enum {MIN_RATE, MIN_APY, RATE_CHANGE}
+  + thresholdValue: float
+  + notificationMethod: enum {EMAIL, PUSH, BOTH}
+  + isActive: boolean
+  + lastTriggered: datetime
+  + createdAt: datetime
+}
+
+class "Арбитражная позиция" as Position {
+  + positionId: UUID
+  + spotSize: float
+  + perpetualSize: float
+  + spotEntryPrice: float
+  + perpetualEntryPrice: float
+  + openingDate: datetime
+  + closingDate: datetime
+  + leverage: integer
+  + status: enum {OPEN, CLOSED, LIQUIDATED}
+  + accumulatedFunding: float
+  + unrealizedPnl: float
+  + healthRatio: float
+}
+
+class "Портфель" as Portfolio {
+  + portfolioId: UUID
+  + totalProfit: float
+  + totalPositions: integer
+  + avgProfitability: float
+  + riskLevel: enum {LOW, MEDIUM, HIGH}
+  + lastUpdated: datetime
+}
+
+class "Экспорт данных" as Export {
+  + exportId: UUID
+  + exportType: enum {CURRENT_RATES, HISTORICAL, PORTFOLIO}
+  + format: enum {CSV, JSON, EXCEL}
+  + periodStart: datetime
+  + periodEnd: datetime
+  + fileUrl: string
+  + createdAt: datetime
+  + fileSize: integer
+}
+
+User "1" *-- "1" Profile : имеет >
+User "1" *-- "0..*" ApiKey : владеет >
+User "1" *-- "1" Portfolio : управляет >
+User "1" *-- "0..*" Alert : настраивает >
+User "1" *-- "0..*" Position : открывает >
+User "1" *-- "0..*" Export : создает >
+
+ApiKey "1" -- "1" Exchange : подключается\nк >
+
+Exchange "1" *-- "0..*" TradingPair : предоставляет >
+
+TradingPair "1" *-- "1" CurrentRate : имеет >
+TradingPair "1" *-- "0..*" HistoricalData : имеет историю >
+
+Alert "1" -- "0..1" TradingPair : для пары >
+Alert "1" -- "1" User : принадлежит >
+
+Position "1" -- "1" TradingPair : по паре >
+Position "1" -- "1" User : принадлежит >
+Position "1" -- "1" Portfolio : входит\nв >
+
+note top of User
+  <b>Основная роль:</b> Трейдер
+  <b>Доступ:</b> Регистрация по email
+  <b>Безопасность:</b> Подтверждение email
+end note
+
+note right of ApiKey
+  <b>Требования:</b> Только права на чтение
+  <b>Безопасность:</b> Шифрование ключей
+  <b>Ограничения:</b> Лимиты запросов API
+end note
+
+note left of CurrentRate
+  <b>Обновление:</b> Каждые 30 секунд
+  <b>Расчеты:</b>
+  • Спред = perpetualPrice - spotPrice
+  • APY = (fundingRate * 3 * 365) * 100%
+end note
+
+note bottom of Alert
+  <b>Проверка:</b> Каждые 5 минут
+  <b>Условия:</b>
+  • fundingRate > threshold
+  • apy > minProfitability
+  • Резкое изменение ставки
+end note
+
+note right of Position
+  <b>Расчеты:</b>
+  • accumulatedFunding = сумма платежей
+  • unrealizedPnl = текущая прибыль/убыток
+  • healthRatio = расстояние до ликвидации
+end note
+
+@enduml
