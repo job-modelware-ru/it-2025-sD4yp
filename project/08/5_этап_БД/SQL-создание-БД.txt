@@ -15,20 +15,6 @@ WITH (oids = false);
 CREATE UNIQUE INDEX category_name_key ON public.category USING btree (name);
 
 
-CREATE SEQUENCE comment_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1;
-
-CREATE TABLE "public"."comment" (
-    "content" character varying NOT NULL,
-    "user_id" integer NOT NULL,
-    "entity_id" integer NOT NULL,
-    "comment_id" integer DEFAULT nextval('comment_id_seq') NOT NULL,
-    "created_at" timestamptz DEFAULT now() NOT NULL,
-    "updated_at" timestamptz DEFAULT now(),
-    "rate" integer NOT NULL
-)
-WITH (oids = false);
-
-
 CREATE SEQUENCE entity_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1;
 
 CREATE TABLE "public"."entity" (
@@ -156,9 +142,6 @@ CREATE UNIQUE INDEX pair_user_entity ON public.userentity USING btree (user_id, 
 
 
 ALTER TABLE ONLY "public"."category" ADD CONSTRAINT "category_parent_id_fkey" FOREIGN KEY (parent_id) REFERENCES category(category_id) NOT DEFERRABLE;
-
-ALTER TABLE ONLY "public"."comment" ADD CONSTRAINT "comment_entity_id_fkey" FOREIGN KEY (entity_id) REFERENCES entity(entity_id) NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."comment" ADD CONSTRAINT "comment_user_id_fkey" FOREIGN KEY (user_id) REFERENCES "user"(user_id) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."entitycategory" ADD CONSTRAINT "entitycategory_category_id_fkey" FOREIGN KEY (category_id) REFERENCES category(category_id) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."entitycategory" ADD CONSTRAINT "entitycategory_entity_id_fkey" FOREIGN KEY (entity_id) REFERENCES entity(entity_id) NOT DEFERRABLE;
