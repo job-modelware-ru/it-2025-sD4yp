@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>PlayNext: UI Kit & Структура</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --primary-blue: #6b8eb5; /* Основной цвет из макетов */
+            --dark-text: #333;
+            --light-text: #fff;
+            --accent-color: #4b6a9a; /* Темно-синий для активных элементов */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-text);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 40px;
+        }
+
+        h1, h2, h3 { color: #2c3e50; }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        .header {
+            border-bottom: 2px solid var(--primary-blue);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .section-title {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 10px 15px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 8px 8px 0 0;
+            font-size: 1.2em;
+        }
+
+        /* --- UI KIT STYLES --- */
+        .component-demo {
+            background-color: #7b9ac0; 
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .demo-label { color: var(--light-text); font-weight: bold; font-size: 0.9em; width: 100%; margin-bottom: 5px; }
+        .ui-btn { padding: 10px 20px; border: none; cursor: pointer; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); border-radius: 4px; transition: all 0.2s; }
+        .ui-btn-primary { background-color: var(--accent-color); color: white; }
+        .ui-btn-secondary { background-color: white; color: var(--accent-color); border: 1px solid var(--accent-color); }
+        .ui-btn-disabled { background-color: #aaa; color: #555; cursor: not-allowed; box-shadow: none; opacity: 0.7; }
+        .ui-input { padding: 8px; border: 1px solid #ccc; width: 200px; background: white; border-radius: 4px; }
+        .ui-checkbox-label { color: white; font-size: 0.9em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border-bottom: 1px solid #eee; padding: 10px; text-align: left; }
+        th { color: #666; font-size: 0.9em; }
+
+        /* --- WBS/DECOMPOSITION STYLES --- */
+        .wbs {
+            margin-top: 20px;
+            padding-left: 0;
+            list-style: none;
+        }
+        .wbs-item {
+            position: relative;
+            padding: 10px 0 10px 25px;
+        }
+        .wbs-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 2px;
+            background-color: var(--primary-blue);
+        }
+        .wbs-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 20px;
+            height: 2px;
+            background-color: var(--primary-blue);
+        }
+        .wbs-item:last-child::before {
+            height: 20px;
+        }
+        .wbs-label {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #e6f0ff;
+            border: 1px solid #b3ccff;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+        .wbs-desc { font-size: 0.9em; color: #666; display: block; margin-top: 5px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>PlayNext: Документация UI и Структура</h1>
+        <p>Техническое описание интерфейса и декомпозиция компонентов для проекта PlayNext</p>
+    </div>
+
+    <h2>1. Атомарные компоненты (UI Kit)</h2>
+    
+    <div class="section">
+        <div class="section-title">1.1 Button (Кнопка)</div>
+        <p>Основной элемент для совершения действий. Стиль: прямоугольная форма, сплошная заливка, тень.</p>
+        
+        <div class="component-demo">
+            <div class="demo-label">Варианты и Состояния:</div>
+            <button class="ui-btn ui-btn-primary">Primary (Yes, Change)</button>
+            <button class="ui-btn ui-btn-secondary">Secondary (Cancel, No)</button>
+            <button class="ui-btn ui-btn-disabled">Disabled Button</button>
+        </div>
+        <table>
+            <tr><th>Тип</th><th>Пример</th><th>Описание</th></tr>
+            <tr><td>Primary</td><td>"Change", "Yes"</td><td>Основное действие, выделяется цветом (акцент).</td></tr>
+            <tr><td>Secondary/Default</td><td>"Cancel", "No"</td><td>Второстепенное действие, светлый фон/обводка.</td></tr>
+            <tr><td>Disabled</td><td>"Disabled Button"</td><td>Неактивна, не реагирует на нажатие.</td></tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">1.2 Input Fields & Checkbox</div>
+        <p>Элементы для ввода данных и выбора опций. Используется `TextArea` для отзывов.</p>
+        <div class="component-demo">
+            <input type="text" class="ui-input" placeholder="Enter email">
+            <input type="password" class="ui-input" placeholder="Password (min 8 chars)">
+            
+            <label class="ui-checkbox-label">
+                <input type="checkbox" class="ui-checkbox" checked>
+                Accept terms
+            </label>
+        </div>
+        <table>
+            <tr><th>Компонент</th><th>Тип</th><th>Валидация (Форма регистрации)</th></tr>
+            <tr><td>Input</td><td>Email</td><td>Стандартный формат email (пр. st.zinkin@yandex.ru).</td></tr>
+            <tr><td>Input</td><td>Password</td><td>Минимум 8 символов.</td></tr>
+            <tr><td>Checkbox</td><td>Choice</td><td>Для выбора жанров и принятия условий.</td></tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">1.3 Progress Bar (Индикатор)</div>
+        <p>Визуализация выполнения задачи или достижения прогресса.</p>
+        <div class="component-demo" style="flex-direction: column; align-items: flex-start;">
+            <div class="demo-label">Прогресс завершения профиля: 75%</div>
+            <div style="width: 100%; height: 10px; background: white; border-radius: 5px;"><div style="width: 75%; height: 100%; background: var(--accent-color); border-radius: 5px;"></div></div>
+        </div>
+        <p>Используется для отображения "Profile Completion" (75%) или "Achievement Progress".</p>
+    </div>
+
+    <h2>2. Структурная декомпозиция (WBS - Визуальное дерево)</h2>
+    <p>Иерархическое представление сложных UI-блоков, построенных из атомарных компонентов (WBS-стиль).</p>
+
+    <ul class="wbs">
+        <li class="wbs-item">
+            <span class="wbs-label">Организм: Форма регистрации (RegistrationForm)</span>
+            <span class="wbs-desc">Сложный компонент для сбора данных, может быть в Модальном окне.</span>
+            <ul class="wbs">
+                <li class="wbs-item">
+                    <span class="wbs-label">Молекула: Поля ввода (Input Group)</span>
+                    <ul class="wbs">
+                        <li class="wbs-item"><span class="wbs-label">Атом: Input</span><span class="wbs-desc">Email, Password, Password Repeat (мин. 8 символов)</span></li>
+                    </ul>
+                </li>
+                <li class="wbs-item">
+                    <span class="wbs-label">Молекула: Управление (Controls)</span>
+                    <ul class="wbs">
+                        <li class="wbs-item"><span class="wbs-label">Атом: Checkbox</span><span class="wbs-desc">"Accept terms and conditions"</span></li>
+                        <li class="wbs-item"><span class="wbs-label">Атом: Button</span><span class="wbs-desc">"Register"</span></li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="wbs-item">
+            <span class="wbs-label">Страница: Профиль (ProfilePage)</span>
+            <span class="wbs-desc">Отображает данные и настройки пользователя.</span>
+            <ul class="wbs">
+                <li class="wbs-item">
+                    <span class="wbs-label">Блок: User Info & Stats</span>
+                    <ul class="wbs">
+                        <li class="wbs-item"><span class="wbs-label">Атом: Stat Items</span><span class="wbs-desc">Rated games: 27, Reviews written: 8</span></li>
+                    </ul>
+                </li>
+                <li class="wbs-item">
+                    <span class="wbs-label">Блок: Account Settings</span>
+                    <ul class="wbs">
+                        <li class="wbs-item"><span class="wbs-label">Атом: Button</span><span class="wbs-desc">"Change password", "Delete account"</span></li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="wbs-item">
+            <span class="wbs-label">Модальное окно: Предупреждение (Warning Modal)</span>
+            <span class="wbs-desc">Универсальный элемент для подтверждения действия.</span>
+            <ul class="wbs">
+                <li class="wbs-item"><span class="wbs-label">Текст:</span> "Warning", "Are you sure?"</li>
+                <li class="wbs-item">
+                    <span class="wbs-label">Молекула: Группа кнопок</span>
+                    <ul class="wbs">
+                        <li class="wbs-item"><span class="wbs-label">Атом: Button</span><span class="wbs-desc">"No" (Secondary)</span></li>
+                        <li class="wbs-item"><span class="wbs-label">Атом: Button</span><span class="wbs-desc">"Yes" (Primary)</span></li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+
+</div>
+
+</body>
+</html>
