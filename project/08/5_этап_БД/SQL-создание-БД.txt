@@ -1,0 +1,211 @@
+CREATE DATABASE "app";
+
+CREATE SEQUENCE category_id_seq INCREMENT 1 MINVALUE 1 START 1;
+
+CREATE TABLE "public"."category" (
+    "parent_id" integer,
+    "name" character varying NOT NULL,
+    "category_id" integer DEFAULT nextval('category_id_seq') NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now(),
+    CONSTRAINT "category_pk" PRIMARY KEY ("category_id")
+)
+WITH (oids = false);
+
+CREATE UNIQUE INDEX category_name_key ON public.category USING btree (name);
+
+
+CREATE SEQUENCE comment_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1;
+
+CREATE TABLE "public"."comment" (
+    "content" character varying NOT NULL,
+    "user_id" integer NOT NULL,
+    "entity_id" integer NOT NULL,
+    "comment_id" integer DEFAULT nextval('comment_id_seq') NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now(),
+    "rate" integer NOT NULL
+)
+WITH (oids = false);
+
+
+CREATE SEQUENCE entity_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1;
+
+CREATE TABLE "public"."entity" (
+    "name" character varying NOT NULL,
+    "contributors" character varying NOT NULL,
+    "address" character varying NOT NULL,
+    "description" character varying NOT NULL,
+    "links" character varying NOT NULL,
+    "contacts" character varying NOT NULL,
+    "photo" character varying NOT NULL,
+    "cost" character varying,
+    "average_cost" character varying,
+    "age_gap" character varying,
+    "entity_id" integer DEFAULT nextval('entity_id_seq') NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now(),
+    "metro" character varying NOT NULL,
+    "date" character varying,
+    CONSTRAINT "entity_pk" PRIMARY KEY ("entity_id")
+)
+WITH (oids = false);
+
+
+CREATE SEQUENCE entitycategory_entity_category_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1;
+
+CREATE TABLE "public"."entitycategory" (
+    "entity_category_id" integer DEFAULT nextval('entitycategory_entity_category_id_seq') NOT NULL,
+    "entity_id" integer NOT NULL,
+    "category_id" integer NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now(),
+    CONSTRAINT "entitycategory_pkey" PRIMARY KEY ("entity_category_id")
+)
+WITH (oids = false);
+
+CREATE UNIQUE INDEX pair_entity_category ON public.entitycategory USING btree (entity_id, category_id);
+
+
+CREATE SEQUENCE entitytag_entity_tag_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1;
+
+CREATE TABLE "public"."entitytag" (
+    "entity_tag_id" integer DEFAULT nextval('entitytag_entity_tag_id_seq') NOT NULL,
+    "entity_id" integer NOT NULL,
+    "tag_id" integer NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now(),
+    CONSTRAINT "entitytag_pkey" PRIMARY KEY ("entity_tag_id")
+)
+WITH (oids = false);
+
+CREATE UNIQUE INDEX pair_entity_tag ON public.entitytag USING btree (entity_id, tag_id);
+
+CREATE SEQUENCE relationtype_relation_type_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
+
+CREATE TABLE "public"."relationtype" (
+    "relation_type_id" integer DEFAULT nextval('relationtype_relation_type_id_seq') NOT NULL,
+    "name" character varying NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now(),
+    CONSTRAINT "relationtype_pkey" PRIMARY KEY ("relation_type_id")
+)
+WITH (oids = false);
+
+
+CREATE SEQUENCE role_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1;
+
+CREATE TABLE "public"."role" (
+    "name" character varying NOT NULL,
+    "role_id" integer DEFAULT nextval('role_id_seq') NOT NULL,
+    CONSTRAINT "role_pk" PRIMARY KEY ("role_id")
+)
+WITH (oids = false);
+
+CREATE UNIQUE INDEX role_name_key ON public.role USING btree (name);
+
+
+CREATE SEQUENCE tag_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1;
+
+CREATE TABLE "public"."tag" (
+    "name" character varying NOT NULL,
+    "tag_id" integer DEFAULT nextval('tag_id_seq') NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now(),
+    CONSTRAINT "tag_pk" PRIMARY KEY ("tag_id")
+)
+WITH (oids = false);
+
+CREATE UNIQUE INDEX tag_name_key ON public.tag USING btree (name);
+
+
+CREATE SEQUENCE user_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1;
+
+CREATE TABLE "public"."user" (
+    "email" character varying(255) NOT NULL,
+    "is_active" boolean NOT NULL,
+    "is_superuser" boolean NOT NULL,
+    "full_name" character varying(255),
+    "hashed_password" character varying NOT NULL,
+    "role_id" integer,
+    "user_id" integer DEFAULT nextval('user_id_seq') NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now(),
+    "phone_number" character varying(20),
+    CONSTRAINT "user_pk" PRIMARY KEY ("user_id")
+)
+WITH (oids = false);
+
+CREATE UNIQUE INDEX ix_user_email ON public."user" USING btree (email);
+
+
+CREATE SEQUENCE userentity_user_entity_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1;
+
+CREATE TABLE "public"."userentity" (
+    "user_entity_id" integer DEFAULT nextval('userentity_user_entity_id_seq') NOT NULL,
+    "user_id" integer NOT NULL,
+    "entity_id" integer NOT NULL,
+    "relation_type_id" integer NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now(),
+    CONSTRAINT "userentity_pkey" PRIMARY KEY ("user_entity_id")
+)
+WITH (oids = false);
+
+CREATE UNIQUE INDEX pair_user_entity ON public.userentity USING btree (user_id, entity_id);
+
+
+ALTER TABLE ONLY "public"."category" ADD CONSTRAINT "category_parent_id_fkey" FOREIGN KEY (parent_id) REFERENCES category(category_id) NOT DEFERRABLE;
+
+ALTER TABLE ONLY "public"."comment" ADD CONSTRAINT "comment_entity_id_fkey" FOREIGN KEY (entity_id) REFERENCES entity(entity_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."comment" ADD CONSTRAINT "comment_user_id_fkey" FOREIGN KEY (user_id) REFERENCES "user"(user_id) NOT DEFERRABLE;
+
+ALTER TABLE ONLY "public"."entitycategory" ADD CONSTRAINT "entitycategory_category_id_fkey" FOREIGN KEY (category_id) REFERENCES category(category_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."entitycategory" ADD CONSTRAINT "entitycategory_entity_id_fkey" FOREIGN KEY (entity_id) REFERENCES entity(entity_id) NOT DEFERRABLE;
+
+ALTER TABLE ONLY "public"."entitytag" ADD CONSTRAINT "entitytag_entity_id_fkey" FOREIGN KEY (entity_id) REFERENCES entity(entity_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."entitytag" ADD CONSTRAINT "entitytag_tag_id_fkey" FOREIGN KEY (tag_id) REFERENCES tag(tag_id) NOT DEFERRABLE;
+
+ALTER TABLE ONLY "public"."user" ADD CONSTRAINT "user_role_id_fkey" FOREIGN KEY (role_id) REFERENCES role(role_id) NOT DEFERRABLE;
+
+ALTER TABLE ONLY "public"."userentity" ADD CONSTRAINT "userentity_entity_id_fkey" FOREIGN KEY (entity_id) REFERENCES entity(entity_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."userentity" ADD CONSTRAINT "userentity_relation_type_id_fkey" FOREIGN KEY (relation_type_id) REFERENCES relationtype(relation_type_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."userentity" ADD CONSTRAINT "userentity_user_id_fkey" FOREIGN KEY (user_id) REFERENCES "user"(user_id) NOT DEFERRABLE;
+
+CREATE TABLE public.usertag
+(
+    user_tag_id integer NOT NULL,
+    user_id integer NOT NULL,
+    tag_id integer NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    PRIMARY KEY (user_tag_id),
+    CONSTRAINT pair_user_tag_user FOREIGN KEY (user_id)
+        REFERENCES public."user" (user_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT pair_user_tag_tag FOREIGN KEY (tag_id)
+        REFERENCES public.tag (tag_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+);
+
+CREATE TABLE public.usercategory
+(
+    user_category_id integer NOT NULL,
+    user_id integer NOT NULL,
+    category_id integer NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    CONSTRAINT usercategory_pkey PRIMARY KEY (user_category_id),
+    CONSTRAINT user_category_category FOREIGN KEY (category_id)
+        REFERENCES public.category (category_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT user_category_user FOREIGN KEY (user_id)
+        REFERENCES public."user" (user_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)

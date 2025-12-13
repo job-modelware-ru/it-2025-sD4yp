@@ -1,0 +1,81 @@
+# Вспомогательные команды для установки необходимых компонент
+
+docker pull alpine
+docker pull nginx:alpine
+docker pull node
+docker pull registry:2
+
+docker version
+docker info
+
+
+
+# Запуск докера в браузере через портайнер
+
+docker run -d -p 8000:9000 --name portainer -v //var/run/docker.sock:/var/run/docker.sock portainer/portainer-ce
+docker run -d -p 8000:80 --name filebrowser -v /var/run/docker.sock:/var/run/docker.sock filebrowser/filebrowser
+
+
+
+# Запуск двух котейнеров на одном порте
+
+docker run -d -p 10001:80 --name web1 nginx:alpine
+docker run -d -p 10002:80 --name web2 nginx:alpine
+
+docker rm -f web1 web2
+
+
+
+# Пользовательская сеть
+
+docker network create my_app_net
+
+docker run -d --name web-server --network my_app_net nginx:alpine
+
+curl http://web-server
+
+docker run -it --network my_app_net alpine sh
+
+ping web-server
+curl http://web-server
+exit
+
+
+
+# Создание собственного реестра
+
+# Запускаем реестр
+docker run -d -p 5000:5000 --name my-registry registry:2
+
+# Проверяем, что реестр работает
+curl http://localhost:5000/v2/
+
+# Тегируем образ для нашего реестра
+docker tag nginx:alpine localhost:5000/my-nginx
+
+docker push localhost:5000/my-nginx
+
+# Проверяем, что образ в реестре
+curl http://localhost:5000/v2/_catalog
+
+# Проверяем теги образа
+curl http://localhost:5000/v2/my-nginx/tags/list
+
+# Удаляем локальные копии
+docker rmi localhost:5000/my-nginx nginx:alpine
+
+docker images
+
+# Качаем обратно из нашего реестра
+docker pull localhost:5000/my-nginx
+
+
+
+
+# Docker Hub
+
+docker search node
+docker pull node
+docker run -t -i node /bin/bash
+node
+.help
