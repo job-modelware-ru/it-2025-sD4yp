@@ -1,0 +1,252 @@
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 1> kubectl get nodes
+
+NAME                         STATUS   ROLES           AGE    VERSION
+demo-cluster-control-plane   Ready    control-plane   2m4s   v1.34.0
+demo-cluster-worker          Ready    <none>          113s   v1.34.0
+demo-cluster-worker2         Ready    <none>          113s   v1.34.0
+
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 1> kubectl run demo --image=nginx
+pod/demo created
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 1> kubectl get pod demo -o yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2025-12-12T20:22:02Z"
+  generation: 1
+  labels:
+    run: demo
+  name: demo
+  namespace: default
+  resourceVersion: "773"
+  uid: c3ed70a2-3436-4f6f-a125-ee11b161ec04
+spec:
+  containers:
+  - image: nginx
+    imagePullPolicy: Always
+    name: demo
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-rrnfs
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: demo-cluster-worker
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-rrnfs
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-12-12T20:22:02Z"
+    observedGeneration: 1
+    status: "False"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-12-12T20:22:02Z"
+    observedGeneration: 1
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-12-12T20:22:02Z"
+    message: 'containers with unready status: [demo]'
+    observedGeneration: 1
+    reason: ContainersNotReady
+    status: "False"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-12-12T20:22:02Z"
+    message: 'containers with unready status: [demo]'
+    observedGeneration: 1
+    reason: ContainersNotReady
+    status: "False"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-12-12T20:22:02Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - image: nginx
+    imageID: ""
+    lastState: {}
+    name: demo
+    ready: false
+    restartCount: 0
+    started: false
+    state:
+      waiting:
+        reason: ContainerCreating
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-rrnfs
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 172.19.0.3
+  hostIPs:
+  - ip: 172.19.0.3
+  observedGeneration: 1
+  phase: Pending
+  qosClass: BestEffort
+  startTime: "2025-12-12T20:22:02Z"
+
+
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 1> kubectl get pod demo -o yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2025-12-12T20:22:02Z"
+  generation: 1
+  labels:
+    run: demo
+  name: demo
+  namespace: default
+  resourceVersion: "1009"
+  uid: c3ed70a2-3436-4f6f-a125-ee11b161ec04
+spec:
+  containers:
+  - image: nginx
+    imagePullPolicy: Always
+    name: demo
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-rrnfs
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: demo-cluster-worker
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-rrnfs
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-12-12T20:24:27Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-12-12T20:22:02Z"
+    observedGeneration: 1
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-12-12T20:24:27Z"
+    observedGeneration: 1
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-12-12T20:24:27Z"
+    observedGeneration: 1
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-12-12T20:22:02Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://93cf4fcedefe4193f0d2427bc27a02115406131e9263f6cdeb4d2afcc2f829eb
+    image: docker.io/library/nginx:latest
+    imageID: docker.io/library/nginx@sha256:fb01117203ff38c2f9af91db1a7409459182a37c87cced5cb442d1d8fcc66d19
+    lastState: {}
+    name: demo
+    ready: true
+    resources: {}
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-12-12T20:24:26Z"
+    user:
+      linux:
+        gid: 0
+        supplementalGroups:
+        - 0
+        uid: 0
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-rrnfs
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 172.19.0.3
+  hostIPs:
+  - ip: 172.19.0.3
+  observedGeneration: 1
+  phase: Running
+  podIP: 10.244.1.2
+  podIPs:
+  - ip: 10.244.1.2
+  qosClass: BestEffort
+  startTime: "2025-12-12T20:22:02Z"
