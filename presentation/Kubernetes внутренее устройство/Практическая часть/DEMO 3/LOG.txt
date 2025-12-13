@@ -1,0 +1,24 @@
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 2> kubectl create deploy web-app --image=nginx --replicas=2
+deployment.apps/web-app created
+
+PS C:\Users\Hp> kubectl delete pod web-app-c8b4f854b-r9qv6
+pod "web-app-c8b4f854b-r9qv6" deleted from default namespace
+
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 2> kubectl get pods -w
+NAME                      READY   STATUS              RESTARTS   AGE
+demo                      1/1     Running             0          17m
+huge-pod                  0/1     Pending             0          3m12s
+web-app-c8b4f854b-r9qv6   0/1     ContainerCreating   0          9s
+web-app-c8b4f854b-w4qbx   0/1     ContainerCreating   0          9s
+worker-test               1/1     Running             0          6m40s
+web-app-c8b4f854b-r9qv6   1/1     Running             0          14s
+web-app-c8b4f854b-w4qbx   1/1     Running             0          15s
+web-app-c8b4f854b-r9qv6   1/1     Terminating         0          54s
+web-app-c8b4f854b-zrtpr   0/1     Pending             0          0s
+web-app-c8b4f854b-r9qv6   1/1     Terminating         0          54s
+web-app-c8b4f854b-zrtpr   0/1     Pending             0          0s
+web-app-c8b4f854b-zrtpr   0/1     ContainerCreating   0          0s
+web-app-c8b4f854b-r9qv6   0/1     Completed           0          54s
+web-app-c8b4f854b-r9qv6   0/1     Completed           0          55s
+web-app-c8b4f854b-r9qv6   0/1     Completed           0          55s
+web-app-c8b4f854b-zrtpr   1/1     Running             0          11s

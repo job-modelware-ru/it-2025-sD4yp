@@ -1,0 +1,60 @@
+PS C:\Users\Hp> kubectl expose deploy web-app --port=80 --name=web-service
+service/web-service exposed
+PS C:\Users\Hp> kubectl get svc web-service
+NAME          TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+web-service   ClusterIP   10.96.17.100   <none>        80/TCP    9s
+PS C:\Users\Hp> kubectl get pods
+NAME                      READY   STATUS    RESTARTS   AGE
+demo                      1/1     Running   0          24m
+huge-pod                  0/1     Pending   0          9m46s
+web-app-c8b4f854b-w4qbx   1/1     Running   0          6m43s
+web-app-c8b4f854b-zrtpr   1/1     Running   0          5m49s
+worker-test               1/1     Running   0          13m
+PS C:\Users\Hp> kubectl exec web-app-c8b4f854b-zrtpr -- curl -s 10.96.17.100
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+PS C:\Users\Hp> kubectl exec web-app-c8b4f854b-zrtpr -- curl -s web-service
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>

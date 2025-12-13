@@ -1,0 +1,54 @@
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 1> kubectl run worker-test --image=nginx
+pod/worker-test created
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 1> kubectl get pod worker-test -o wide
+NAME          READY   STATUS              RESTARTS   AGE   IP       NODE                   NOMINATED NODE   READINESS GATES
+worker-test   0/1     ContainerCreating   0          16s   <none>   demo-cluster-worker2   <none>           <none>
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 1> kubectl run huge-pod --image=nginx --requests="cpu=100"
+error: unknown flag: --requests
+See 'kubectl run --help' for usage.
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 1> cd ..
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes> cd '.\DEMO 2'
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 2> kubectl apply -f huge-pod.yaml
+pod/huge-pod created
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 2> kubectl get pod huge-pod
+NAME       READY   STATUS    RESTARTS   AGE
+huge-pod   0/1     Pending   0          7s
+PS C:\Users\Hp\OneDrive\Рабочий стол\Kubernetes\DEMO 2> kubectl describe pod huge-pod
+Name:             huge-pod
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             <none>
+Labels:           <none>
+Annotations:      <none>
+Status:           Pending
+IP:
+IPs:              <none>
+Containers:
+  nginx:
+    Image:      nginx
+    Port:       <none>
+    Host Port:  <none>
+    Requests:
+      cpu:        100
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-tjkv7 (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False
+Volumes:
+  kube-api-access-tjkv7:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age   From               Message
+  ----     ------            ----  ----               -------
+  Warning  FailedScheduling  26s   default-scheduler  0/3 nodes are available: 1 node(s) had untolerated taint {node-role.kubernetes.io/control-plane: }, 2 Insufficient cpu. no new claims to deallocate, preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.
